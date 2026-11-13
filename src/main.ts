@@ -76,7 +76,7 @@ function joinOnlineRoom(){
  const code=(document.querySelector<HTMLInputElement>('#roomCode')?.value||'').trim().toUpperCase();
  if(code.length!==6){alert(t('6자리 방 코드를 입력해줘.','Enter a 6-character room code.'));return;}
  const name=prompt(t('플레이어 이름을 입력해줘','Enter your player name'),'Player')||'Player';
- socket.emit('room:join',{code,name},(res:any)=>{if(!res?.ok){alert(res?.error==='ROOM_FULL'?t('방이 가득 찼어.','Room is full.'):t('방을 찾을 수 없어.','Room not found.'));return;}currentRoom=res.room;roomCode=res.room.code;renderRoomState(res.room);});
+ socket.emit('room:join',{code,name},(res:any)=>{if(!res?.ok){alert(res?.error==='ROOM_FULL'?t('방이 가득 찼어.','Room is full.'):t('방을 찾을 수 없어.','Room not found.'));return;}currentRoom=res.room;roomCode=res.room.code;renderRoomState(res.room);if(chosenColor())selectOnlineCharacter(chosenColor()!);});
 }
 \nfunction connectOnline(){
  const url=document.querySelector<HTMLInputElement>('#serverUrl')?.value.trim();if(!url){alert(t('서버 주소를 입력해줘.','Enter the server URL.'));return;}
