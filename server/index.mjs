@@ -1,7 +1,7 @@
 import { createServer } from 'node:http';
 import { Server } from 'socket.io';
 
-const httpServer = createServer();
+const httpServer = createServer((_req, res) => { res.writeHead(200, { 'content-type': 'text/plain; charset=utf-8' }); res.end('Impostor Volleyball room server is online'); });
 const io = new Server(httpServer, {
   cors: { origin: process.env.CLIENT_ORIGIN?.split(',') ?? '*', methods: ['GET','POST'] }
 });
