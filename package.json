@@ -10,7 +10,8 @@
     "preview": "vite preview --host 0.0.0.0",
     "desktop": "electron .",
     "dist:win": "npm run build && electron-builder --win portable",
-    "server": "node server/index.mjs"
+    "server": "node server/index.mjs",
+    "start": "node server/index.mjs"
   },
   "dependencies": {
     "socket.io": "^4.8.1",
@@ -26,8 +27,23 @@
   "build": {
     "appId": "com.seden.impostorvolleyball",
     "productName": "Impostor Volleyball",
-    "directories": { "output": "release" },
-    "files": ["dist/**/*", "electron/**/*", "package.json"],
-    "win": { "target": [{ "target": "portable", "arch": ["x64"] }] }
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    }
   }
 }
