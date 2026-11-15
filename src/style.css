@@ -361,6 +361,7 @@ button {
 .touch-controls {
   display: flex;
   justify-content: space-between;
+  gap: 12px;
   padding: 4px 8px 20px;
 }
 .touch-controls div {
@@ -368,8 +369,9 @@ button {
   gap: 10px;
 }
 .touch-controls button {
-  width: 62px;
-  height: 62px;
+  width: min(var(--touch-button-size, 62px), calc((100vw - 76px) / 4));
+  height: min(var(--touch-button-size, 62px), calc((100vw - 76px) / 4));
+  flex-shrink: 0;
   border-radius: 50%;
   background: #ffffff20;
   border: 1px solid #ffffff44;
@@ -755,4 +757,50 @@ button:disabled {
   .hero-buttons button {
     min-width: 120px;
   }
+}
+
+.app-shell {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+.app-shell input,
+.app-shell textarea,
+.app-shell [contenteditable="true"] {
+  -webkit-user-select: text;
+  user-select: text;
+  -webkit-touch-callout: default;
+}
+.touch-controls,
+.touch-controls * {
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+.app-shell img {
+  -webkit-user-drag: none;
+}
+.touch-size-setting {
+  display: grid;
+  gap: 10px;
+  margin: 18px 0;
+  font-size: 13px;
+}
+.touch-size-setting > span {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+.touch-size-setting small {
+  font-size: 11px;
+  color: #969aad;
+}
+.touch-size-setting input {
+  width: 100%;
+  accent-color: #ff536a;
+}
+.modal {
+  max-height: calc(100dvh - 36px);
+  overflow-y: auto;
 }

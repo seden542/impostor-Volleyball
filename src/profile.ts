@@ -9,6 +9,7 @@ export type Profile = {
   seconds: number;
   difficulty: Difficulty;
   mobile: boolean;
+  touchSize: number;
   musicEnabled: boolean;
   volume: number;
   lang: "ko" | "en";
@@ -31,6 +32,7 @@ const defaults = (): Profile => ({
   seconds: 180,
   difficulty: "normal",
   mobile: false,
+  touchSize: 62,
   musicEnabled: true,
   volume: 0.35,
   lang: "ko",
@@ -68,6 +70,8 @@ export function loadProfile(storage: Pick<Storage, "getItem">): Profile {
   if (["easy", "normal", "hard"].includes(raw.difficulty))
     p.difficulty = raw.difficulty;
   if (typeof raw.mobile === "boolean") p.mobile = raw.mobile;
+  if (typeof raw.touchSize === "number" && Number.isFinite(raw.touchSize))
+    p.touchSize = Math.max(48, Math.min(96, Math.round(raw.touchSize)));
   if (typeof raw.musicEnabled === "boolean") p.musicEnabled = raw.musicEnabled;
   if (typeof raw.volume === "number" && Number.isFinite(raw.volume))
     p.volume = Math.max(0, Math.min(1, raw.volume));

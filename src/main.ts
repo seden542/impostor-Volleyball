@@ -19,6 +19,11 @@ try {
   } as unknown as Storage;
 }
 const profile = loadProfile(storage);
+document.documentElement.style.setProperty(
+  "--touch-button-size",
+  `${profile.touchSize}px`,
+);
+const touchPointers = new Map<number, string>();
 let saveAvailable = true,
   difficulty: Difficulty = profile.difficulty;
 let resultRecorded = false,
@@ -172,7 +177,7 @@ function openRank() {
 function openSettings() {
   const modal = document.createElement("div");
   modal.className = "modal-backdrop";
-  modal.innerHTML = `<div class="modal"><div class="modal-head"><h2>${t("설정", "Settings")}</h2><button class="x">×</button></div><label class="toggle-line"><span><b>${t("모바일 모드", "Mobile mode")}</b><small>${t("화면에 터치 버튼 표시", "Show on-screen controls")}</small></span><input id="mobileToggle" type="checkbox" ${mobileMode ? "checked" : ""}></label><div class="music-setting"><label><input id="musicEnabled" type="checkbox" ${profile.musicEnabled ? "checked" : ""}> ${t("배경음악", "Background music")}</label><label>${t("음량", "Volume")} <input id="musicVolume" type="range" min="0" max="100" value="${Math.round(profile.volume * 100)}"></label></div><label class="difficulty-label">${t("AI 난이도 (AI 대전에서 적용)", "AI difficulty (AI matches)")}<select id="settingsDifficulty">${(["easy", "normal", "hard"] as const).map((level) => `<option value="${level}" ${level === difficulty ? "selected" : ""}>${level === "easy" ? t("쉬움", "Easy") : level === "normal" ? t("보통", "Normal") : t("어려움", "Hard")}</option>`).join("")}</select></label><div class="setting-block"><h3>${t("개인 키 설정", "Key bindings")}</h3><p>${t("키 입력칸을 클릭한 뒤 원하는 키를 눌러.", "Click a field and press a key.")}</p><div class="key-grid">${[
+  modal.innerHTML = `<div class="modal"><div class="modal-head"><h2>${t("설정", "Settings")}</h2><button class="x">×</button></div><label class="toggle-line"><span><b>${t("모바일 모드", "Mobile mode")}</b><small>${t("화면에 터치 버튼 표시", "Show on-screen controls")}</small></span><input id="mobileToggle" type="checkbox" ${mobileMode ? "checked" : ""}></label><label class="touch-size-setting" for="touchSize"><span>${t("모바일 버튼 크기", "Mobile button size")} <output id="touchSizeValue">${profile.touchSize}px</output></span><input id="touchSize" type="range" min="48" max="96" step="2" value="${profile.touchSize}"><small>${t("좁은 화면에서는 화면 폭에 맞춰 자동으로 줄어듭니다.", "Buttons shrink to fit narrow screens.")}</small></label><div class="music-setting"><label><input id="musicEnabled" type="checkbox" ${profile.musicEnabled ? "checked" : ""}> ${t("배경음악", "Background music")}</label><label>${t("음량", "Volume")} <input id="musicVolume" type="range" min="0" max="100" value="${Math.round(profile.volume * 100)}"></label></div><label class="difficulty-label">${t("AI 난이도 (AI 대전에서 적용)", "AI difficulty (AI matches)")}<select id="settingsDifficulty">${(["easy", "normal", "hard"] as const).map((level) => `<option value="${level}" ${level === difficulty ? "selected" : ""}>${level === "easy" ? t("쉬움", "Easy") : level === "normal" ? t("보통", "Normal") : t("어려움", "Hard")}</option>`).join("")}</select></label><div class="setting-block"><h3>${t("개인 키 설정", "Key bindings")}</h3><p>${t("키 입력칸을 클릭한 뒤 원하는 키를 눌러.", "Click a field and press a key.")}</p><div class="key-grid">${[
     ["left", t("왼쪽", "Left")],
     ["right", t("오른쪽", "Right")],
     ["jump", t("점프", "Jump")],
@@ -189,10 +194,23 @@ function openSettings() {
   modal.querySelector(".x")!.addEventListener("click", () => modal.remove());
   modal
     .querySelector<HTMLInputElement>("#mobileToggle")!
-    .addEventListener(
-      "change",
-      (e) => (mobileMode = (e.target as HTMLInputElement).checked),
-    );
+    .addEventListener("change", (e) => {
+      mobileMode = (e.target as HTMLInputElement).checked;
+      savePreferences();
+      renderTouchControls();
+    });
+  modal
+    .querySelector<HTMLInputElement>("#touchSize")!
+    .addEventListener("input", (e) => {
+      profile.touchSize = Number((e.target as HTMLInputElement).value);
+      document.documentElement.style.setProperty(
+        "--touch-button-size",
+        `${profile.touchSize}px`,
+      );
+      modal.querySelector("#touchSizeValue")!.textContent =
+        `${profile.touchSize}px`;
+      savePreferences();
+    });
   modal
     .querySelector<HTMLSelectElement>("#settingsDifficulty")!
     .addEventListener("change", (e) => {
@@ -678,7 +696,7 @@ function startGame(color: Color, online: boolean) {
 }
 function renderGame() {
   const v = document.querySelector<HTMLDivElement>("#view")!;
-  v.innerHTML = `<section class="game-wrap"><div class="game-hud"><div><small>${t("팀 블루", "TEAM A")}</small><b id="scoreA">0</b></div><div class="match-info"><b id="gameMap">${MAPS[selectedMap][lang]}</b><span id="timer">${matchSeconds ? formatTime(matchSeconds) : "∞"}</span></div><div><small>${t("팀 레드", "TEAM B")}</small><b id="scoreB">0</b></div>${onlineGame && network.host ? `<button id="matchSettingsBtn" class="ghost">${t("경기 설정", "MATCH SETTINGS")}</button>` : ""}<button id="exitGame" class="ghost">✕</button></div>${onlineGame ? `<div class="game-room-bar"><span id="gameRoom">${roomSummary()}</span><span>${t("코드 공유로 관전 가능", "Share code to invite spectators")}</span></div>` : ""}<div class="canvas-shell"><canvas id="court" width="1280" height="720"></canvas><div class="toast" id="toast"></div></div><div class="control-hint">${t("이동: 좌우 키 · 점프: 위쪽 키 · 공 치기: 스페이스", "Move: Left/Right · Jump: Up · Hit: Space")}</div>${mobileMode && !spectating() ? '<div class="touch-controls"><div><button data-hold="left">◀</button><button data-hold="right">▶</button></div><div><button data-hold="jump">▲</button><button data-hold="hit">●</button></div></div>' : ""}</section>`;
+  v.innerHTML = `<section class="game-wrap"><div class="game-hud"><div><small>${t("팀 블루", "TEAM A")}</small><b id="scoreA">0</b></div><div class="match-info"><b id="gameMap">${MAPS[selectedMap][lang]}</b><span id="timer">${matchSeconds ? formatTime(matchSeconds) : "∞"}</span></div><div><small>${t("팀 레드", "TEAM B")}</small><b id="scoreB">0</b></div>${onlineGame && network.host ? `<button id="matchSettingsBtn" class="ghost">${t("경기 설정", "MATCH SETTINGS")}</button>` : ""}<button id="exitGame" class="ghost">✕</button></div>${onlineGame ? `<div class="game-room-bar"><span id="gameRoom">${roomSummary()}</span><span>${t("코드 공유로 관전 가능", "Share code to invite spectators")}</span></div>` : ""}<div class="canvas-shell"><canvas id="court" width="1280" height="720"></canvas><div class="toast" id="toast"></div></div><div class="control-hint">${t("이동: 좌우 키 · 점프: 위쪽 키 · 공 치기: 스페이스", "Move: Left/Right · Jump: Up · Hit: Space")}</div><div id="touchControlSlot"></div></section>`;
   document
     .querySelector("#matchSettingsBtn")
     ?.addEventListener("click", openMatchSettings);
@@ -700,17 +718,42 @@ function renderGame() {
     leaveOnline();
     renderHome();
   });
-  document.querySelectorAll<HTMLButtonElement>("[data-hold]").forEach((b) => {
-    const k = b.dataset.hold!;
-    b.addEventListener("pointerdown", (e) => {
-      e.preventDefault();
-      held.add(k);
+  renderTouchControls();
+}
+function clearTouchControls() {
+  touchPointers.clear();
+  for (const key of ["left", "right", "jump", "hit"]) held.delete(key);
+}
+function renderTouchControls() {
+  const slot = document.querySelector("#touchControlSlot");
+  if (!slot) return;
+  clearTouchControls();
+  slot.innerHTML =
+    mobileMode && !spectating()
+      ? `<div class="touch-controls" aria-label="${t("모바일 조작", "Touch controls")}"><div><button type="button" data-hold="left" aria-label="${t("왼쪽", "Left")}">◀</button><button type="button" data-hold="right" aria-label="${t("오른쪽", "Right")}">▶</button></div><div><button type="button" data-hold="jump" aria-label="${t("점프", "Jump")}">▲</button><button type="button" data-hold="hit" aria-label="${t("공 치기", "Hit")}">●</button></div></div>`
+      : "";
+  slot.querySelectorAll<HTMLButtonElement>("[data-hold]").forEach((button) => {
+    const action = button.dataset.hold!;
+    button.addEventListener("pointerdown", (event) => {
+      if (event.pointerType === "mouse" && event.button !== 0) return;
+      event.preventDefault();
+      touchPointers.set(event.pointerId, action);
+      held.add(action);
+      button.setPointerCapture(event.pointerId);
     });
-    ["pointerup", "pointerleave", "pointercancel"].forEach((ev) =>
-      b.addEventListener(ev, () => held.delete(k)),
-    );
+    const release = (event: PointerEvent) => {
+      touchPointers.delete(event.pointerId);
+      if (![...touchPointers.values()].includes(action)) held.delete(action);
+    };
+    for (const name of [
+      "pointerup",
+      "pointercancel",
+      "lostpointercapture",
+    ] as const)
+      button.addEventListener(name, release);
   });
 }
+
 function formatTime(s: number) {
   return `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
 }
@@ -935,13 +978,32 @@ window.addEventListener("keydown", (e) => {
 });
 window.addEventListener("keyup", (e) => held.delete(e.code));
 window.addEventListener("blur", () => {
+  clearTouchControls();
   held.clear();
   if (onlineGame) network.input(readControls());
 });
 document.addEventListener("visibilitychange", () => {
   if (document.hidden) {
+    clearTouchControls();
     held.clear();
     if (onlineGame) network.input(readControls());
   }
+});
+document.addEventListener("contextmenu", (event) => {
+  const target = event.target as HTMLElement;
+  if (target.closest('input,textarea,[contenteditable="true"]')) return;
+  if (target.closest(".app-shell")) event.preventDefault();
+});
+document.addEventListener("selectstart", (event) => {
+  const target = event.target as HTMLElement;
+  if (
+    !target.closest('input,textarea,[contenteditable="true"]') &&
+    target.closest(".app-shell")
+  )
+    event.preventDefault();
+});
+document.addEventListener("dragstart", (event) => {
+  if ((event.target as HTMLElement).closest(".app-shell"))
+    event.preventDefault();
 });
 renderShell();

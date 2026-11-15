@@ -20,6 +20,7 @@ assert.deepEqual(p.rank, { rating: 15, wins: 1, losses: 1, draws: 1 });
 applyResult(p, "win", false);
 assert.equal(p.rank.rating, 15);
 assert.equal(p.ai.wins, 1);
+p.touchSize = 94;
 p.name = "Saved";
 p.difficulty = "hard";
 p.musicEnabled = false;
@@ -73,3 +74,11 @@ assert.notEqual(slow.target, fast.target);
 console.log(
   "PASS rating, tiers, separate AI records, save/reload, malformed storage recovery, storage denied, difficulty behavior",
 );
+
+data.set("iv-profile-v1", JSON.stringify({ touchSize: 500 }));
+assert.equal(loadProfile(storage).touchSize, 96);
+data.set("iv-profile-v1", JSON.stringify({ touchSize: 1 }));
+assert.equal(loadProfile(storage).touchSize, 48);
+data.set("iv-profile-v1", "{}");
+assert.equal(loadProfile(storage).touchSize, 62);
+console.log("PASS mobile size migration, bounds and save/reload");
