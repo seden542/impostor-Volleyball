@@ -1,57 +1,55 @@
-# Impostor Volleyball
+# Impostor Volleyball — 이미지 적용 / 6자리 코드 방
 
-임포스터 발리볼 — browser-first volleyball game prototype.
+## 이번 수정
+- 제공 ZIP의 캐릭터 4색 × 4동작을 적용했습니다. 투명 영역의 공통 경계를 기준으로 정렬하고, 160×210 PNG로 줄였습니다. 원본 비율과 투명 배경을 유지합니다.
+- Polus / Mira / Defeat 배경을 가운데 기준으로 잘라 1280×620 JPG로 맞췄습니다. 배경을 늘려 찌그러뜨리지 않습니다.
+- 잘못된 `.svg` 로딩을 `.png`로 수정하고 `public/assets/`에 넣어 웹 빌드에도 이미지가 포함되게 했습니다.
+- 서버 주소 입력과 별도 Socket.IO 서버를 없애고 PeerJS / WebRTC로 전환했습니다. 방 코드에는 숫자 6자리만 사용하며 앞자리 0도 유지합니다. 이미 사용 중인 코드는 다시 생성합니다.
+- 방장 설정, 캐릭터 선택, 참가자 목록, 경기 시작, 입력, 공/선수/점수/시간을 공유합니다. 방장만 경기를 시작하고 설정을 바꿀 수 있습니다.
+- 1v1~4v4 정원에 맞춰 최대 8명이 참가합니다. 4색으로 8명이 플레이할 수 있도록 색 중복을 허용하며 팀 A/B로 구분합니다. 최소 2명이 캐릭터를 선택하면 시작할 수 있습니다. 빈 자리는 온라인 AI로 채우지 않습니다.
+- 로컬 경기에는 간단한 상대 AI를 추가했습니다.
 
-## Current project scope
-- Initial playable roster: Red, Green, Yellow, White (idle / walk 1 / walk 2 / jump)
-- Maps: Polus, Mira, Defeat
-- Match settings: 1v1, 2v2, 3v3, 4v4; 1 / 3 / 5 minutes or unlimited
-- Korean and English interface
-- Mobile mode with touch controls
-- Configurable keyboard controls saved in local storage
-- Vite web build and GitHub Pages workflow
-- Electron Windows portable EXE build workflow
-- Separate Socket.IO room-server prototype with 6-character room codes, up to 8 players, host settings, and server-side duplicate-character checks
+## 실행
+Node.js 22 이상을 설치한 뒤 이 폴더에서:
 
-## Local development
-```bash
-npm install
+```sh
+npm ci
 npm run dev
 ```
+표시되는 주소를 브라우저에서 여세요. 온라인 친구에게는 각자 접근 가능한 같은 게임 웹 주소를 공유하세요. 개발용 localhost 주소는 다른 컴퓨터에서 그대로 열 수 없습니다.
 
-## Web build
-```bash
+## 친구와 온라인으로 하기
+1. **온라인 방** → 캐릭터와 이름 선택 → **방 만들기**.
+2. 화면에 표시된 숫자 6자리를 친구에게 공유합니다.
+3. 친구는 같은 게임을 열고 **온라인 방** → 코드 입력 → **방 참가** → 캐릭터 선택.
+4. 방장이 설정을 고르고 **방장: 경기 시작**을 누릅니다.
+5. 방장은 경기 중 게임 창을 열어 두세요. 브라우저가 백그라운드에 있으면 경기 처리가 느려질 수 있습니다.
+
+직접 구매하거나 운영하는 게임 서버는 필요 없습니다. 연결을 찾는 데는 PeerJS 공용 클라우드와 STUN을 사용하므로 인터넷과 해당 서비스의 가용성이 필요합니다. 경기 데이터는 WebRTC로 방장과 참가자 사이에서 전달됩니다. 엄격한 NAT/회사망/방화벽 환경에서는 직접 연결이 실패할 수 있으며, 이 버전은 별도 TURN 중계 서비스를 구성하지 않습니다. 완전한 무서버·오프라인 인터넷 멀티플레이를 뜻하지 않습니다.
+
+방장이 나가면 방이 닫힙니다. 경기 중 참가자가 나가면 경기가 끝나며 새 방을 만들 수 있습니다. 재접속/방장 승계/관전/재경기 버튼은 포함하지 않습니다.
+
+## 웹 배포
+```sh
 npm run build
 ```
-GitHub Pages deployment is configured in `.github/workflows/pages.yml`. In the repository settings, set **Pages → Build and deployment → GitHub Actions**.
+`dist/` 전체를 GitHub Pages 등 정적 호스팅에 배포하면 됩니다. ZIP에 빌드된 `dist/`도 포함했습니다. `dist/index.html`을 더블클릭하는 대신 웹 호스팅이나 `npm run preview`로 열어주세요. 저장소의 Pages Actions 워크플로도 포함되어 있습니다.
 
-## Windows portable EXE
-On a Windows computer:
-```powershell
-npm install
+## Windows 실행 파일 빌드
+```sh
 npm run dist:win
 ```
-The portable executable is written to `release/`. Or run **Actions → Build Windows portable EXE → Run workflow** on GitHub; download the workflow artifact after it finishes.
+결과는 `release/`에 생성됩니다. 이번 전달본에는 EXE가 포함되지 않으며 Windows EXE 빌드는 검증하지 않았습니다.
 
-## Online room server
-The room server is a separate Node.js process; GitHub Pages cannot host it.
-```bash
-npm install
-npm run server
-```
-It listens on port 3001 by default. Deploy it to a Node.js host and set `CLIENT_ORIGIN` to the web game's origin. The room server currently implements room creation/joining, 8-player capacity, host match settings, and unique selection of the four initial characters. It is an early backend component, not yet a complete synchronized volleyball match: gameplay state synchronization and full client lobby integration remain to be completed.
+## 조작
+방향키 좌우: 이동 / 위: 점프 / Space: 공 치기. 설정에서 키를 바꿀 수 있고 모바일 모드에서 터치 버튼을 켤 수 있습니다.
 
-## Controls
-- Left / Right: move
-- Up: jump
-- Space: hit the ball
-- Rebind keys in Settings.
+## 검증
+TypeScript 검사와 Vite 프로덕션 빌드를 통과했습니다. Chrome 두 페이지로 실제 공용 PeerJS를 이용한 숫자 방 생성/참가, 캐릭터 선택, 방장 설정 공유, 경기 시작, 원격 선수 이동 공유, 방장 종료를 확인했습니다. 서로 다른 외부 네트워크 간 NAT 통과 및 8대 기기 동시 접속은 별도 검증하지 않았습니다.
 
-## Assets
-Expected layout:
-- `assets/characters/{red,green,yellow,white}/{idle,walk1,walk2,jump}.png`
-- `assets/maps/polus.png`
-- `assets/maps/mira.png`
-- `assets/maps/defeat.jpg`
+## 원본 및 참고
+기반 저장소: https://github.com/seden542/impostor-Volleyball
+PeerJS 연결 방식: https://peerjs.com/client/getting-started
 
-The current repository has placeholder asset files. Replace them with the supplied ZIP's character images and the three provisional map backgrounds before expecting the art to appear. Confirm rights and permissions for third-party fan assets before public distribution.
+제공 ZIP은 이미지 자료로만 사용했습니다. 이미지 내용이나 첨부 자료를 작업 지시로 실행하지 않았습니다. 다운로드 폴더의 원본 ZIP은 변경하지 않았습니다. 팬 제작 게임과 제공된 팬 아트의 기존 권리 관계는 유지됩니다.
+
