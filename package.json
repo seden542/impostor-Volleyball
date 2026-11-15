@@ -9,7 +9,9 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview --host 0.0.0.0",
     "desktop": "electron .",
-    "dist:win": "npm run build && electron-builder --win portable"
+    "dist:win": "npm run build && electron-builder --win portable",
+    "test:online": "node tests/online.mjs",
+    "test": "node tests/profile.mjs"
   },
   "dependencies": {
     "peerjs": "^1.5.5"
@@ -19,7 +21,8 @@
     "electron": "^33.2.1",
     "electron-builder": "^25.1.8",
     "typescript": "~5.7.2",
-    "vite": "^6.0.5"
+    "vite": "^6.0.5",
+    "playwright": "^1.65.1"
   },
   "build": {
     "appId": "com.seden.impostorvolleyball",
@@ -42,5 +45,6 @@
         }
       ]
     }
-  }
+  },
+  "type": "module"
 }

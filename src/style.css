@@ -634,3 +634,125 @@ footer {
     font-size: 24px;
   }
 }
+.game-room-bar {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 10px 0 16px;
+  color: #b6bbd0;
+  font-size: 12px;
+}
+.live-settings {
+  display: grid;
+  gap: 16px;
+  margin-top: 20px;
+}
+.live-settings label {
+  display: grid;
+  gap: 8px;
+  font-size: 13px;
+}
+.live-settings select {
+  background: #0d1018;
+  color: #fff;
+  border: 1px solid #ffffff30;
+  border-radius: 8px;
+  padding: 12px;
+}
+.live-settings p {
+  font-size: 12px;
+  color: #b6bbd0;
+  line-height: 1.7;
+}
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.hero-buttons {
+  flex-wrap: wrap;
+}
+@media (max-width: 760px) {
+  .game-hud {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .game-room-bar {
+    font-size: 11px;
+  }
+}
+.rank-card {
+  display: grid;
+  gap: 10px;
+  margin: 22px 0;
+  padding: 22px;
+  border: 1px solid #ff657866;
+  border-radius: 12px;
+  background: #242032;
+  text-align: center;
+}
+.rank-card strong {
+  font-size: 30px;
+  color: #ffca74;
+}
+.rank-card b {
+  font-size: 22px;
+}
+.rank-card progress {
+  width: 100%;
+  accent-color: #ff536a;
+}
+.muted {
+  font-size: 12px;
+  color: #b6bbd0;
+  line-height: 1.7;
+}
+.music-setting {
+  display: grid;
+  gap: 14px;
+  margin: 20px 0;
+}
+.music-setting label {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  font-size: 13px;
+}
+.difficulty-label {
+  display: grid;
+  gap: 8px;
+  margin-top: 18px;
+  font-size: 13px;
+}
+.difficulty-label select {
+  background: #0d1018;
+  color: white;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #ffffff30;
+}
+.top-actions {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.topbar {
+  height: auto;
+  min-height: 76px;
+  gap: 12px;
+  padding: 12px 0;
+}
+@media (max-width: 760px) {
+  .brand {
+    min-width: 125px;
+  }
+  .top-actions {
+    gap: 5px;
+  }
+  .top-actions button {
+    font-size: 10px;
+    padding: 7px;
+  }
+  .hero-buttons button {
+    min-width: 120px;
+  }
+}
